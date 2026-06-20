@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NYC Mobility Explorer — Taxi Trip Analytics</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+    <div class="app">
+
+        <!--  Sidebar (desktop/tablet landscape)  -->
+        <nav class="sidebar" aria-label="Main navigation">
+            <div class="sidebar__brand">
+                <span class="sidebar__medallion">NYC</span>
+                <span class="sidebar__brand-text">Mobility<br>Explorer</span>
+            </div>
+
+            <ul class="sidebar__nav">
+                <li>
+                    <a href="#dashboard" class="sidebar__link sidebar__link--active" data-section="dashboard">
+                        <span class="sidebar__icon" aria-hidden="true">⬡</span>
+                        <span class="sidebar__label">Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#trips" class="sidebar__link" data-section="trips">
+                        <span class="sidebar__icon" aria-hidden="true">≡</span>
+                        <span class="sidebar__label">Trips</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#map" class="sidebar__link" data-section="map">
+                        <span class="sidebar__icon" aria-hidden="true">◎</span>
+                        <span class="sidebar__label">Zone map</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#about" class="sidebar__link" data-section="about">
+                        <span class="sidebar__icon" aria-hidden="true">◉</span>
+                        <span class="sidebar__label">About</span>
+                    </a>
+                </li>
+            </ul>
+
+            <button class="sidebar__theme-toggle" id="theme-toggle" aria-label="Toggle light and dark theme">
+                <span class="sidebar__icon" aria-hidden="true">☼</span>
+                <span class="sidebar__label">Theme</span>
+            </button>
+        </nav>
+
+        <!--  Bottom nav (phones/small tablets)  -->
+        <nav class="bottomnav" aria-label="Main navigation">
+            <a href="#dashboard" class="bottomnav__link bottomnav__link--active" data-section="dashboard">
+                <span class="bottomnav__icon" aria-hidden="true">⬡</span>
+                <span class="bottomnav__label">Dashboard</span>
+            </a>
+            <a href="#trips" class="bottomnav__link" data-section="trips">
+                <span class="bottomnav__icon" aria-hidden="true">≡</span>
+                <span class="bottomnav__label">Trips</span>
+            </a>
+            <a href="#map" class="bottomnav__link" data-section="map">
+                <span class="bottomnav__icon" aria-hidden="true">◎</span>
+                <span class="bottomnav__label">Map</span>
+            </a>
+            <a href="#about" class="bottomnav__link" data-section="about">
+                <span class="bottomnav__icon" aria-hidden="true">◉</span>
+                <span class="bottomnav__label">About</span>
+            </a>
+            <button class="bottomnav__link bottomnav__link--theme" id="theme-toggle-mobile"
+                aria-label="Toggle light and dark theme">
+                <span class="bottomnav__icon" aria-hidden="true">☼</span>
+                <span class="bottomnav__label">Theme</span>
+            </button>
+        </nav>
+
+        <!--  Main  -->
+        <div class="main">
+
+            <!-- Topbar -->
+            <header class="topbar">
+                <div class="topbar__title-group">
+                    <h1 class="topbar__title">NYC Mobility Explorer</h1>
+                    <p class="topbar__subtitle">Yellow Taxi Trips · January 2019 · Dashboard reflects the full month</p>
+                </div>
+            </header>
+
+            <!--  Dashboard section  -->
+            <section id="dashboard" class="section section--active" aria-label="Dashboard">
+
+                <!-- KPI grid -->
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <span class="kpi-card__medallion" data-stat="total-trips">—</span>
+                        <span class="kpi-card__label">Total trips</span>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-card__medallion" data-stat="total-revenue">—</span>
+                        <span class="kpi-card__label">Fare revenue</span>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-card__medallion" data-stat="avg-fare">—</span>
+                        <span class="kpi-card__label">Avg fare</span>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-card__medallion" data-stat="avg-distance">—</span>
+                        <span class="kpi-card__label">Avg distance (mi)</span>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-card__medallion" data-stat="avg-tip-pct">—</span>
+                        <span class="kpi-card__label">Avg tip %</span>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-card__medallion" data-stat="peak-hour">—</span>
+                        <span class="kpi-card__label">Peak hour</span>
+                    </div>
+                </div>
+
+                <!-- Charts row 1 -->
+                <div class="chart-grid">
+                    <div class="chart-card chart-card--wide">
+                        <div class="chart-card__header">
+                            <div>
+                                <h3 class="chart-card__title">Hourly trip volume</h3>
+                                <p class="chart-card__subtitle">Trips by hour of day</p>
+                            </div>
+                            <button class="chip-toggle" id="toggle-hourly-view">Switch to line</button>
+                        </div>
+                        <div class="chart-card__body">
+                            <canvas id="hourly-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-card__header">
+                            <div>
+                                <h3 class="chart-card__title">Top pickup zones</h3>
+                                <p class="chart-card__subtitle">Highest-volume origins</p>
+                            </div>
+                        </div>
+                        <div class="chart-card__body">
+                            <canvas id="top-zones-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts row 2 -->
+                <div class="chart-grid">
+                    <div class="chart-card">
+                        <div class="chart-card__header">
+                            <div>
+                                <h3 class="chart-card__title">Fare vs distance</h3>
+                                <p class="chart-card__subtitle">Relationship between trip length and cost</p>
+                            </div>
+                            <label class="chip-toggle chip-toggle--checkbox">
+                                <input type="checkbox" id="trendline-toggle" />
+                                Trendline
+                            </label>
+                        </div>
+                        <div class="chart-card__body">
+                            <canvas id="scatter-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-card__header">
+                            <div>
+                                <h3 class="chart-card__title">Payment split</h3>
+                                <p class="chart-card__subtitle">Card vs cash vs other</p>
+                            </div>
+                        </div>
+                        <div class="chart-card__body">
+                            <canvas id="payment-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!--  Trips section (filters + table)  -->
+            <section id="trips" class="section" aria-label="Trip records">
+                <div class="data-layout">
+
+                    <aside class="filters-panel">
+                        <h2 class="filters-panel__heading">Filter trips</h2>
+
+                        <div class="filter-group">
+                            <label class="filter-group__label" for="global-date">Pickup date</label>
+                            <input type="date" id="global-date" class="filter-group__control" value="2019-01-15"
+                                min="2019-01-01" max="2019-01-31" />
+                        </div>
+
+                        <div class="filter-group">
+                            <label class="filter-group__label" for="borough-filter">Borough</label>
+                            <select id="borough-filter" class="filter-group__control">
+                                <option value="all">All</option>
+                                <option value="Manhattan">Manhattan</option>
+                                <option value="Brooklyn">Brooklyn</option>
+                                <option value="Queens">Queens</option>
+                                <option value="Bronx">Bronx</option>
+                                <option value="Staten Island">Staten Island</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label class="filter-group__label">Fare range ($)</label>
+                            <div class="filter-group__dual">
+                                <input type="number" id="min-fare" placeholder="Min" value="0" step="5" />
+                                <span class="filter-group__dual-sep">–</span>
+                                <input type="number" id="max-fare" placeholder="Max" value="600" step="5" />
+                            </div>
+                        </div>
+
+                        <div class="filter-group">
+                            <label class="filter-group__label">Distance (miles)</label>
+                            <div class="filter-group__dual">
+                                <input type="number" id="min-distance" placeholder="Min" value="0" step="0.5" />
+                                <span class="filter-group__dual-sep">–</span>
+                                <input type="number" id="max-distance" placeholder="Max" value="50" step="0.5" />
+                            </div>
+                        </div>
+
+                        <div class="filter-group">
+                            <label class="filter-group__label" for="hour-filter">Time of day</label>
+                            <select id="hour-filter" class="filter-group__control">
+                                <option value="all">All hours</option>
+                                <option value="morning">Morning (6am–12pm)</option>
+                                <option value="afternoon">Afternoon (12pm–6pm)</option>
+                                <option value="night">Night (6pm–6am)</option>
+                            </select>
+                        </div>
+
+                        <button class="btn btn--primary" id="apply-filters-btn">Apply filters</button>
+                        <button class="btn btn--ghost" id="reset-filters-btn">Reset</button>
+                    </aside>
+
+                    <div class="table-panel">
+                        <div class="table-panel__header">
+                            <h2 class="table-panel__heading">Trip records</h2>
+                            <button class="btn btn--accent" id="export-csv-btn">Export filtered CSV</button>
+                        </div>
+                        <div class="table-panel__scroll">
+                            <table id="trips-table" class="trips-table">
+                                <thead>
+                                    <tr>
+                                        <th>Pickup time</th>
+                                        <th>Dropoff time</th>
+                                        <th>Pickup zone</th>
+                                        <th>Dropoff zone</th>
+                                        <th>Distance (mi)</th>
+                                        <th>Fare ($)</th>
+                                        <th>Tip ($)</th>
+                                        <th>Total ($)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="8" class="trips-table__loading">Loading trip data…</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!--  Map section  -->
+            <section id="map" class="section" aria-label="Zone map">
+                <div class="map-toolbar">
+                    <div class="filter-group filter-group--inline">
+                        <label class="filter-group__label" for="map-metric">Color zones by</label>
+                        <select id="map-metric" class="filter-group__control">
+                            <option value="pickup_count">Pickup volume</option>
+                            <option value="dropoff_count">Dropoff volume</option>
+                            <option value="avg_fare">Average fare</option>
+                        </select>
+                    </div>
+                    <div class="filter-group filter-group--inline">
+                        <label class="filter-group__label" for="map-borough">Borough</label>
+                        <select id="map-borough" class="filter-group__control">
+                            <option value="">All boroughs</option>
+                            <option value="Manhattan">Manhattan</option>
+                            <option value="Brooklyn">Brooklyn</option>
+                            <option value="Queens">Queens</option>
+                            <option value="Bronx">Bronx</option>
+                            <option value="Staten Island">Staten Island</option>
+                        </select>
+                    </div>
+                    <button class="btn btn--primary" id="apply-map-filters">Apply</button>
+                </div>
+
+                <div class="map-container">
+                    <div id="leaflet-map"></div>
+                </div>
+
+                <div class="map-legend">
+                    <span><span class="map-legend__swatch map-legend__swatch--low"></span>Low</span>
+                    <span><span class="map-legend__swatch map-legend__swatch--mid"></span>Medium</span>
+                    <span><span class="map-legend__swatch map-legend__swatch--high"></span>High</span>
+                    <span class="map-legend__hint">Click a zone for details</span>
+                </div>
+            </section>
+
+            <!--  About section  -->
+            <section id="about" class="section" aria-label="About this dashboard">
+                <div class="about-card">
+                    <h2 class="about-card__heading">Data quality &amp; derived features</h2>
+                    <p>
+                        Source: NYC TLC Yellow Taxi trip records, January 2019. The cleaning pipeline
+                        removed roughly 5.8% of raw rows as outliers — invalid fares, negative
+                        distances, and trips where the dropoff time preceded the pickup time.
+                    </p>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Leaflet -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- App scripts -->
+    <script src="data.js"></script>
+    <script src="charts.js"></script>
+    <script src="filters.js"></script>
+    <script src="map.js"></script>
+    <script src="nav.js"></script>
+</body>
+
+</html>
