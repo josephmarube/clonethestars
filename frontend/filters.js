@@ -1,9 +1,4 @@
-const filterElement = document.getElementById('borough-filter');
-
-filterElement.addEventListener('change', async () => {
-    // When the filter changes, explicitly call the functions from your other modules
-    await renderDashboardCharts();
-});
+const FILTER_STORAGE_KEY = 'nyc_mobility_filters';
 
 function getCurrentFilters() {
   return {
@@ -17,8 +12,44 @@ function getCurrentFilters() {
   };
 }
 
+function saveFilterInputs() {
+  try {
+    sessionStorage.setItem(FILTER_STORAGE_KEY, JSON.stringify({
+      date: document.getElementById('global-date')?.value,
+      borough: document.getElementById('borough-filter')?.value,
+      minFare: document.getElementById('min-fare')?.value,
+      maxFare: document.getElementById('max-fare')?.value,
+      minDistance: document.getElementById('min-distance')?.value,
+      maxDistance: document.getElementById('max-distance')?.value,
+      hour: document.getElementById('hour-filter')?.value,
+    }));
+  } catch (e) {
+    // sessionStorage unavailable - filters just won't survive reload
+  }
+}
+
+function restoreFilterInputs() {
+  let saved = null;
+  try {
+    saved = JSON.parse(sessionStorage.getItem(FILTER_STORAGE_KEY));
+  } catch (e) {
+    return false;
+  }
+  if (!saved) return false;
+
+  if (saved.date) document.getElementById('global-date').value = saved.date;
+  if (saved.borough) document.getElementById('borough-filter').value = saved.borough;
+  if (saved.minFare) document.getElementById('min-fare').value = saved.minFare;
+  if (saved.maxFare) document.getElementById('max-fare').value = saved.maxFare;
+  if (saved.minDistance) document.getElementById('min-distance').value = saved.minDistance;
+  if (saved.maxDistance) document.getElementById('max-distance').value = saved.maxDistance;
+  if (saved.hour) document.getElementById('hour-filter').value = saved.hour;
+  return true;
+}
+
 function applyFilters() {
   const filters = getCurrentFilters();
+  saveFilterInputs();
 
   DataAPI.getTrips(filters)
     .then(trips => {
@@ -77,5 +108,10 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('apply-filters-btn')?.addEventListener('click', applyFilters);
   document.getElementById('reset-filters-btn')?.addEventListener('click', resetFilters);
   document.getElementById('export-csv-btn')?.addEventListener('click', exportTripsCsv);
+  document.getElementById('borough-filter')?.addEventListener('change', applyFilters);
 
+  var restored = restoreFilterInputs();
+  if (restored) {
+    applyFilters();
+  }
 });
