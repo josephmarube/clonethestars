@@ -54,7 +54,7 @@
                 </li>
             </ul>
 
-            <button class="sidebar__theme-toggle" id="theme-toggle" aria-label="Toggle light and dark theme">
+            <button type="button" class="sidebar__theme-toggle" id="theme-toggle" aria-label="Toggle light and dark theme">
                 <span class="sidebar__icon" aria-hidden="true">☼</span>
                 <span class="sidebar__label">Theme</span>
             </button>
@@ -78,7 +78,7 @@
                 <span class="bottomnav__icon" aria-hidden="true">◉</span>
                 <span class="bottomnav__label">About</span>
             </a>
-            <button class="bottomnav__link bottomnav__link--theme" id="theme-toggle-mobile"
+            <button type="button" class="bottomnav__link bottomnav__link--theme" id="theme-toggle-mobile"
                 aria-label="Toggle light and dark theme">
                 <span class="bottomnav__icon" aria-hidden="true">☼</span>
                 <span class="bottomnav__label">Theme</span>
@@ -135,7 +135,7 @@
                                 <h3 class="chart-card__title">Hourly trip volume</h3>
                                 <p class="chart-card__subtitle">Trips by hour of day</p>
                             </div>
-                            <button class="chip-toggle" id="toggle-hourly-view">Switch to line</button>
+                            <button type="button" class="chip-toggle" id="toggle-hourly-view">Switch to line</button>
                         </div>
                         <div class="chart-card__body">
                             <canvas id="hourly-chart"></canvas>
@@ -240,14 +240,14 @@
                             </select>
                         </div>
 
-                        <button class="btn btn--primary" id="apply-filters-btn">Apply filters</button>
-                        <button class="btn btn--ghost" id="reset-filters-btn">Reset</button>
+                        <button type="button" class="btn btn--primary" id="apply-filters-btn">Apply filters</button>
+                        <button type="button" class="btn btn--ghost" id="reset-filters-btn">Reset</button>
                     </aside>
 
                     <div class="table-panel">
                         <div class="table-panel__header">
                             <h2 class="table-panel__heading">Trip records</h2>
-                            <button class="btn btn--accent" id="export-csv-btn">Export filtered CSV</button>
+                            <button type="button" class="btn btn--accent" id="export-csv-btn">Export filtered CSV</button>
                         </div>
                         <div class="table-panel__scroll">
                             <table id="trips-table" class="trips-table">

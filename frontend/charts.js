@@ -442,10 +442,10 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   document.getElementById('theme-toggle')?.addEventListener('click', function() {
-    setTimeout(loadDashboard, 0);
+    setTimeout(refreshTheme, 0);
   });
   document.getElementById('theme-toggle-mobile')?.addEventListener('click', function() {
-    setTimeout(loadDashboard, 0);
+    setTimeout(refreshTheme, 0);
   });
 
   document.getElementById('global-date')?.addEventListener('change', function() {
