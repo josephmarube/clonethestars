@@ -153,6 +153,16 @@ def get_zones():
     if metric not in ("pickup_count", "dropoff_count", "avg_fare"):
         metric = "pickup_count"
 
+    # CHANGED: cache key includes metric+borough since, unlike the other
+    # cached routes below, this one takes query params that change the
+    # result. Without this, every dropdown change re-runs the correlated
+    # subquery per zone from scratch (slow on ~7.49M trip rows).
+    cache_key = f"zones_{metric}_{borough or 'all'}"
+    if cache_key in cache:
+        data, timestamp = cache[cache_key]
+        if time.time() - timestamp < CACHE_TTL:
+            return jsonify(data), 200
+
     if metric == "pickup_count":
         metric_sql = "(SELECT COUNT(*) FROM trips WHERE pu_location_id = z.zone_id)"
     elif metric == "dropoff_count":
@@ -178,7 +188,10 @@ def get_zones():
     sql += " LIMIT 300"
 
     try:
-        return jsonify(query_db(sql, params)), 200
+        # CHANGED: store result in cache before returning
+        data = query_db(sql, params)
+        cache[cache_key] = (data, time.time())
+        return jsonify(data), 200
     except sqlite3.Error as e:
         return jsonify({"error": str(e)}), 500
 
